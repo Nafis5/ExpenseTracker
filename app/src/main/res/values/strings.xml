@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">BudgetMan</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="add_income">Add Income</string>
+    <string name="amount">Amount</string>
+    <string name="description">Description</string>
+    <string name="category">Category</string>
+    <string name="date">Date</string>
+    <string name="save">Save</string>
+    <string name="select_date">Select Date</string>
+    <string name="expense">Expense</string>
+    <string name="income">Income</string>
+    <string name="total_income">Total Income</string>
+    <string name="total_expense">Total Expense</string>
+    <string name="remaining">Remaining</string>
+    <string name="transaction_limit_reached">Transaction Limit Reached</string>
+
+    <string-array name="transaction_categories">
+        <item>Food</item>
+        <item>Transport</item>
+        <item>Bills</item>
+        <item>Other</item>
+    </string-array>
+
+    <string name="upgrade_prompt_title">Upgrade to Premium</string>
+    <string name="upgrade_prompt_message_history">View transaction history beyond the current month by upgrading to Premium.</string>
+    <string name="upgrade_prompt_message_limit">You have reached the transaction limit for the free version. Upgrade to Premium for unlimited transactions.</string>
+    <string name="budget_alert_title">Budget Alert</string>
+    <string name="budget_alert_message">You have spent over 90% of your budget for</string>
+
+    <string name="save_button_text">Save</string>
+    <string name="delete_button_text">Delete</string>
+
+    <string name="set_budget_title">Set Budget for Category</string>
+    <string name="budget_amount_hint">Budget Amount</string>
+    <string name="set_budget_for_category">Set Budget for %1$s</string>
+</resources>
