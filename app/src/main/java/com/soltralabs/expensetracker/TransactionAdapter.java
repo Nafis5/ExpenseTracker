@@ -95,6 +95,18 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
                     case "bills":
                         categoryIcon.setImageResource(R.drawable.ic_bills);
                         break;
+                    case "housing":
+                        categoryIcon.setImageResource(R.drawable.ic_housing);
+                        break;
+                    case "savings":
+                        categoryIcon.setImageResource(R.drawable.ic_savings);
+                        break;
+                    case "debt payments":
+                        categoryIcon.setImageResource(R.drawable.ic_debt);
+                        break;
+                    case "health":
+                        categoryIcon.setImageResource(R.drawable.ic_health);
+                        break;
                     default:
                         categoryIcon.setImageResource(R.drawable.ic_other);
                         break;

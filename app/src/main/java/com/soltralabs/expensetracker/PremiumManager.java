@@ -23,9 +23,11 @@ public class PremiumManager {
 
     public boolean isPremium() {
         return isPremium;
+
     }
 
     public void setIsPremium(boolean premium, Context context) {
+
         this.isPremium = premium;
         SharedPreferences.Editor editor = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
         editor.putBoolean(IS_PREMIUM_KEY, premium);
@@ -41,9 +43,12 @@ public class PremiumManager {
 
     public boolean canViewHistoricalData() {
         return isPremium;
+
+
     }
 
     public boolean shouldShowAds() {
-        return !isPremium;
+       // return !isPremium;
+        return true;
     }
 } 

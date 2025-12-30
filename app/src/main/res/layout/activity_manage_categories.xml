@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
 
     android:orientation="vertical"
-    tools:context=".TransactionListActivity">
+    tools:context=".ManageCategoriesActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -16,46 +16,42 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:title="All Transactions" />
+            app:title="Manage Categories" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <Spinner
-            android:id="@+id/month_filter_spinner"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-        <ImageView
-            android:id="@+id/calendar_icon"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/new_category_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="New Category Name"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/add_category_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:contentDescription="Select Date"
-            android:src="@drawable/ic_calendar" />
-
+            android:text="Add"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/filter_info_textview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:padding="8dp"
-        tools:text="Showing transactions for 2023-10" />
-
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/transactions_recyclerview"
+        android:id="@+id/categories_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp" />
+        android:padding="8dp"/>
 
 </LinearLayout> 

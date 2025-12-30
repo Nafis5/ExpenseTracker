@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/view_all_transactions_container">
+        android:layout_above="@+id/bottom_bar_container">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -19,6 +20,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                app:menu="@menu/main_menu"
                 app:title="@string/app_name" />
 
         </com.google.android.material.appbar.AppBarLayout>
@@ -98,10 +100,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
                                 android:text="@string/total_income"
                                 android:textColor="@color/black"
-                                android:textSize="14sp"
-                                android:layout_marginBottom="4dp"/>
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/total_income_amount"
@@ -131,10 +133,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
                                 android:text="@string/total_expense"
                                 android:textColor="@color/black"
-                                android:textSize="14sp"
-                                android:layout_marginBottom="4dp"/>
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/total_expense_amount"
@@ -164,10 +166,10 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
                                 android:text="@string/remaining"
                                 android:textColor="@color/black"
-                                android:textSize="14sp"
-                                android:layout_marginBottom="4dp"/>
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/total_remaining_amount"
@@ -211,41 +213,38 @@
 
         </androidx.core.widget.NestedScrollView>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_add_transaction"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:contentDescription="Add Transaction"
-            android:src="@android:drawable/ic_input_add" />
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <LinearLayout
-        android:id="@+id/view_all_transactions_container"
+        android:id="@+id/bottom_bar_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_above="@+id/ad_container"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:background="?android:attr/windowBackground">
+        android:layout_alignParentBottom="true">
 
-        <Button
-            android:id="@+id/view_all_transactions_button"
+        <LinearLayout
+            android:id="@+id/view_all_transactions_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View All Transactions" />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:background="?android:attr/windowBackground">
 
-    <LinearLayout
-        android:id="@+id/ad_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:orientation="vertical" />
+            <Button
+                android:id="@+id/view_all_transactions_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View All Transactions" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ad_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </LinearLayout>
 
 </RelativeLayout>

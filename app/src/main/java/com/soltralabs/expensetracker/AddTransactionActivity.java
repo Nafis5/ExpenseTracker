@@ -18,7 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class AddTransactionActivity extends AppCompatActivity {
@@ -75,8 +77,8 @@ public class AddTransactionActivity extends AppCompatActivity {
     }
 
     private void setupSpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.transaction_categories, android.R.layout.simple_spinner_item);
+        List<String> categories = db.getAllCategoryNames();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categories);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categorySpinner.setAdapter(adapter);
     }
@@ -119,9 +121,9 @@ public class AddTransactionActivity extends AppCompatActivity {
             categorySpinner.setVisibility(View.VISIBLE);
             descriptionInputLayout.setHint("Description (Optional)");
             // Set spinner selection
-            String[] categories = getResources().getStringArray(R.array.transaction_categories);
-            for (int i = 0; i < categories.length; i++) {
-                if (categories[i].equals(transaction.getCategory())) {
+            List<String> categories = db.getAllCategoryNames();
+            for (int i = 0; i < categories.size(); i++) {
+                if (categories.get(i).equals(transaction.getCategory())) {
                     categorySpinner.setSelection(i);
                     break;
                 }

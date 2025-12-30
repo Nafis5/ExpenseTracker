@@ -2,6 +2,8 @@ package com.soltralabs.expensetracker;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -11,12 +13,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import androidx.core.content.ContextCompat;
 
 import java.text.ParseException;
@@ -31,6 +38,7 @@ import android.content.SharedPreferences;
 public class MainActivity extends AppCompatActivity implements CategoryAdapter.OnCategoryClickListener, BudgetSettingDialog.BudgetDialogListener {
 
     private static final int ADD_TRANSACTION_REQUEST = 1;
+    private static final int MANAGE_CATEGORIES_REQUEST = 2;
 
     private DatabaseHelper db;
     private PremiumManager premiumManager;
@@ -43,17 +51,21 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     private TransactionAdapter transactionAdapter;
     private List<CategoryAdapter.CategoryBudget> categoryBudgets;
     private List<Transaction> recentTransactions;
-
+    private FirebaseAnalytics mFirebaseAnalytics;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+        
+
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         db = new DatabaseHelper(this);
         premiumManager = PremiumManager.getInstance(this);
-
-
-
+        premiumManager.setIsPremium(true, this);
         // Set current month
         Calendar cal = Calendar.getInstance();
         currentMonthYear = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
@@ -61,7 +73,35 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
         initViews();
         setupListeners();
         loadDashboardData();
-        AdManager.loadBannerAd(this, findViewById(R.id.ad_container));
+        if (premiumManager.shouldShowAds()) {
+            AdManager.loadBannerAd(this, findViewById(R.id.ad_container));
+        }
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_add_transaction) {
+            UserPreferences prefs = db.getUserPreferences();
+            if(!premiumManager.canAddTransaction(prefs.getTransactionCount())){
+                showUpgradeDialog(getString(R.string.upgrade_prompt_message_limit));
+                return true;
+            }
+            Intent intent = new Intent(MainActivity.this, AddTransactionActivity.class);
+            startActivityForResult(intent, ADD_TRANSACTION_REQUEST);
+            return true;
+        } else if (item.getItemId() == R.id.action_manage_categories) {
+            Intent intent = new Intent(this, ManageCategoriesActivity.class);
+            startActivityForResult(intent, MANAGE_CATEGORIES_REQUEST);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -98,25 +138,45 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     }
 
     private void setupListeners() {
-        previousMonthButton.setOnClickListener(v -> showMonthChangeUpgradeDialog());
-        nextMonthButton.setOnClickListener(v -> showMonthChangeUpgradeDialog());
-
-        FloatingActionButton fabAddTransaction = findViewById(R.id.fab_add_transaction);
-        fabAddTransaction.setOnClickListener(view -> {
-            UserPreferences prefs = db.getUserPreferences();
-            if(!premiumManager.canAddTransaction(prefs.getTransactionCount())){
-                showUpgradeDialog(getString(R.string.upgrade_prompt_message_limit));
-                return;
-            }
-            Intent intent = new Intent(MainActivity.this, AddTransactionActivity.class);
-            startActivityForResult(intent, ADD_TRANSACTION_REQUEST);
-        });
+        setupMonthNavigation();
 
         Button viewAllButton = findViewById(R.id.view_all_transactions_button);
         viewAllButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, TransactionListActivity.class);
             startActivity(intent);
         });
+    }
+
+    private void setupMonthNavigation() {
+        previousMonthButton.setOnClickListener(v -> {
+            if (premiumManager.canViewHistoricalData()) {
+                changeMonth(-1);
+            } else {
+                showMonthChangeUpgradeDialog();
+            }
+        });
+
+        nextMonthButton.setOnClickListener(v -> {
+            if (premiumManager.canViewHistoricalData()) {
+                changeMonth(1);
+            } else {
+                showMonthChangeUpgradeDialog();
+            }
+        });
+    }
+
+    private void changeMonth(int amount) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+            Date date = sdf.parse(currentMonthYear);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            cal.add(Calendar.MONTH, amount);
+            currentMonthYear = sdf.format(cal.getTime());
+            loadDashboardData();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadDashboardData() {
@@ -167,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     
     private void loadCategoryBudgetData() {
         List<CategoryAdapter.CategoryBudget> newBudgets = new ArrayList<>();
-        String[] categories = getResources().getStringArray(R.array.transaction_categories);
+        List<String> categories = db.getAllCategoryNames();
         List<Transaction> monthTransactions = db.getTransactionsForMonth(currentMonthYear);
         
         for(String category : categories) {
@@ -250,6 +310,12 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
             if (categoryToPrompt != null) {
                 // Since this is the first time, budget limit is 0
                 showBudgetSettingDialog(categoryToPrompt, 0);
+            }
+        } else if (requestCode == MANAGE_CATEGORIES_REQUEST && resultCode == RESULT_OK && data != null) {
+            String newCategoryName = data.getStringExtra("NEW_CATEGORY_NAME");
+            if (newCategoryName != null) {
+                // Prompt to set budget for the new category
+                showBudgetSettingDialog(newCategoryName, 0);
             }
         }
     }

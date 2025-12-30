@@ -9,9 +9,9 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/icon2"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/icon2"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseTracker"
         tools:targetApi="33">
@@ -32,6 +32,7 @@
         </activity>
         <activity android:name=".AddTransactionActivity" />
         <activity android:name=".TransactionListActivity" />
+        <activity android:name=".ManageCategoriesActivity" />
     </application>
 
 </manifest>

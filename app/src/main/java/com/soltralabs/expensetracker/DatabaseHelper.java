@@ -6,15 +6,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "expensetracker.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 4;
 
     // Table Names
     public static final String TABLE_TRANSACTIONS = "transactions";
     public static final String TABLE_BUDGETS = "budgets";
     public static final String TABLE_USER_PREFERENCES = "user_preferences";
+    public static final String TABLE_CATEGORIES = "categories";
 
     // Common column names
     public static final String KEY_ID = "id";
@@ -26,6 +30,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String KEY_TYPE = "type";
     public static final String KEY_DATE = "date";
     public static final String KEY_CREATED_AT = "created_at";
+
+    // CATEGORIES Table - column names
+    public static final String KEY_CATEGORY_NAME = "category_name";
+    public static final String KEY_IS_DEFAULT = "is_default"; // 1 for default, 0 for custom
 
     // BUDGETS Table - column names
     public static final String KEY_MONTHLY_LIMIT = "monthly_limit";
@@ -44,6 +52,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + KEY_CATEGORY + " TEXT NOT NULL," + KEY_TYPE + " TEXT NOT NULL,"
             + KEY_DATE + " TEXT NOT NULL,"
             + KEY_CREATED_AT + " TIMESTAMP DEFAULT CURRENT_TIMESTAMP" + ")";
+
+    private static final String CREATE_TABLE_CATEGORIES = "CREATE TABLE "
+            + TABLE_CATEGORIES + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + KEY_CATEGORY_NAME + " TEXT UNIQUE NOT NULL,"
+            + KEY_IS_DEFAULT + " INTEGER DEFAULT 0" + ")";
 
     private static final String CREATE_TABLE_BUDGETS = "CREATE TABLE "
             + TABLE_BUDGETS + "(" + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -66,6 +79,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_TRANSACTIONS);
         db.execSQL(CREATE_TABLE_BUDGETS);
         db.execSQL(CREATE_TABLE_USER_PREFERENCES);
+        db.execSQL(CREATE_TABLE_CATEGORIES);
+        addInitialCategories(db);
     }
 
     @Override
@@ -73,7 +88,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BUDGETS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USER_PREFERENCES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
         onCreate(db);
+    }
+
+    private void addInitialCategories(SQLiteDatabase db) {
+        String[] defaultCategories = {"Food", "Transport", "Bills", "Housing", "Savings", "Debt Payments", "Health", "Other"};
+        for (String category : defaultCategories) {
+            ContentValues values = new ContentValues();
+            values.put(KEY_CATEGORY_NAME, category);
+            values.put(KEY_IS_DEFAULT, 1);
+            db.insert(TABLE_CATEGORIES, null, values);
+        }
     }
 
     // Adding new transaction
@@ -221,6 +247,57 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int count = cursor.getCount();
         cursor.close();
         return count;
+    }
+
+    // Category methods
+    public long addCategory(String categoryName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_CATEGORY_NAME, categoryName);
+        values.put(KEY_IS_DEFAULT, 0); // Custom category
+        long id = db.insert(TABLE_CATEGORIES, null, values);
+        db.close();
+        return id;
+    }
+
+    public void deleteCategory(String categoryName) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_CATEGORIES, KEY_CATEGORY_NAME + " = ? AND " + KEY_IS_DEFAULT + " = 0", new String[]{categoryName});
+        db.close();
+    }
+
+    public List<String> getAllCategoryNames() {
+        List<String> categories = new ArrayList<>();
+        String selectQuery = "SELECT " + KEY_CATEGORY_NAME + " FROM " + TABLE_CATEGORIES;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                categories.add(cursor.getString(cursor.getColumnIndexOrThrow(KEY_CATEGORY_NAME)));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return categories;
+    }
+
+    public List<Category> getAllCategories() {
+        List<Category> categories = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_CATEGORIES;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Category category = new Category();
+                category.setId(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)));
+                category.setName(cursor.getString(cursor.getColumnIndexOrThrow(KEY_CATEGORY_NAME)));
+                category.setDefault(cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_DEFAULT)) == 1);
+                categories.add(category);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return categories;
     }
 
     // Budget methods
