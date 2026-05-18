@@ -2,6 +2,7 @@ package com.soltralabs.expensetracker;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -40,6 +41,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_transaction);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         db = new DatabaseHelper(this);
         selectedDate = Calendar.getInstance();
@@ -61,6 +63,12 @@ public class AddTransactionActivity extends AppCompatActivity {
             }
         }
         updateDateButtonText();
+        
+        // Preload Interstitial Ad if user is not premium
+        UserPreferences prefs = db.getUserPreferences();
+        if (!prefs.isPremium()) {
+            InterstitialAdHelper.loadAd(this);
+        }
     }
 
     private void initViews() {
@@ -203,6 +211,7 @@ public class AddTransactionActivity extends AppCompatActivity {
             db.saveUserPreferences(prefs);
 
             Toast.makeText(this, "Transaction added", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
 
             // Check if it's a new expense for a category without a budget
             if (type.equals("expense")) {
@@ -220,6 +229,7 @@ public class AddTransactionActivity extends AppCompatActivity {
             Transaction updatedTransaction = new Transaction(transactionId, amount, description, category, type, date);
             db.updateTransaction(updatedTransaction);
             Toast.makeText(this, "Transaction updated", Toast.LENGTH_SHORT).show();
+            setResult(RESULT_OK);
         }
 
         finish(); // Go back to the previous activity

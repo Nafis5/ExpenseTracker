@@ -31,11 +31,11 @@ public class UserPreferences {
     }
 
     public boolean isPremium() {
-        return isPremium;
+        return true;
     }
 
     public void setPremium(boolean premium) {
-        isPremium = premium;
+        isPremium = true;
     }
 
     public double getMonthlyIncome() {

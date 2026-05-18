@@ -22,7 +22,7 @@ public class PremiumManager {
     }
 
     public boolean isPremium() {
-        return isPremium;
+        return true;
 
     }
 
@@ -48,7 +48,7 @@ public class PremiumManager {
     }
 
     public boolean shouldShowAds() {
-       // return !isPremium;
-        return true;
+        return !isPremium;
+       // return true;
     }
 } 

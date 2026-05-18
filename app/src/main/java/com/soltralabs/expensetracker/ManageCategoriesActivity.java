@@ -60,6 +60,13 @@ public class ManageCategoriesActivity extends AppCompatActivity {
     }
 
     private void addCategory() {
+        // Check if user is premium
+        UserPreferences prefs = db.getUserPreferences();
+        if (!prefs.isPremium()) {
+            showUpgradeDialog();
+            return;
+        }
+
         String categoryName = newCategoryEditText.getText().toString().trim();
         if (TextUtils.isEmpty(categoryName)) {
             Toast.makeText(this, "Category name cannot be empty", Toast.LENGTH_SHORT).show();
@@ -72,5 +79,16 @@ public class ManageCategoriesActivity extends AppCompatActivity {
         resultIntent.putExtra("NEW_CATEGORY_NAME", categoryName);
         setResult(RESULT_OK, resultIntent);
         finish();
+    }
+
+    private void showUpgradeDialog() {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Premium Feature")
+                .setMessage("Creating custom categories is available for premium users only.")
+                .setPositiveButton("Upgrade", (dialog, which) -> {
+                    startActivity(new Intent(this, SubscriptionActivity.class));
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 } 

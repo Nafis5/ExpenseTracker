@@ -392,4 +392,59 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Return default preferences if none found
         return new UserPreferences(false, 0, 0);
     }
+
+    public List<Transaction> getAllTransactions() {
+        List<Transaction> transactions = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_TRANSACTIONS;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Transaction transaction = new Transaction();
+                transaction.setId(cursor.getLong(cursor.getColumnIndexOrThrow(KEY_ID)));
+                transaction.setAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(KEY_AMOUNT)));
+                transaction.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(KEY_DESCRIPTION)));
+                transaction.setCategory(cursor.getString(cursor.getColumnIndexOrThrow(KEY_CATEGORY)));
+                transaction.setType(cursor.getString(cursor.getColumnIndexOrThrow(KEY_TYPE)));
+                transaction.setDate(cursor.getString(cursor.getColumnIndexOrThrow(KEY_DATE)));
+                transactions.add(transaction);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return transactions;
+    }
+
+    public List<Budget> getAllBudgets() {
+        List<Budget> budgets = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + TABLE_BUDGETS;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Budget budget = new Budget(
+                        cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_CATEGORY)),
+                        cursor.getDouble(cursor.getColumnIndexOrThrow(KEY_MONTHLY_LIMIT)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_MONTH_YEAR))
+                );
+                budgets.add(budget);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return budgets;
+    }
+
+    public void clearAllTables() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_TRANSACTIONS, null, null);
+        db.delete(TABLE_BUDGETS, null, null);
+        db.delete(TABLE_CATEGORIES, null, null);
+        db.delete(TABLE_USER_PREFERENCES, null, null);
+        
+        // Re-add default categories after clearing
+        addInitialCategories(db);
+        db.close();
+    }
 } 

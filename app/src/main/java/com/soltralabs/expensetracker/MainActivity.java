@@ -1,12 +1,19 @@
 package com.soltralabs.expensetracker;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -26,6 +33,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 
 import androidx.core.content.ContextCompat;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -59,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
         
 
         setContentView(R.layout.activity_main);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -77,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
             AdManager.loadBannerAd(this, findViewById(R.id.ad_container));
         }
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        
+        checkAndTriggerRestore();
     }
 
     @Override
@@ -282,8 +293,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
                 .setTitle(R.string.upgrade_prompt_title)
                 .setMessage(message)
                 .setPositiveButton("Upgrade", (dialog, which) -> {
-                    // Non-functional for this project
-                    Toast.makeText(this, "Upgrade feature not implemented.", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(this, SubscriptionActivity.class));
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -305,17 +315,27 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ADD_TRANSACTION_REQUEST && resultCode == RESULT_OK && data != null) {
-            String categoryToPrompt = data.getStringExtra("PROMPT_BUDGET_FOR_CATEGORY");
-            if (categoryToPrompt != null) {
-                // Since this is the first time, budget limit is 0
-                showBudgetSettingDialog(categoryToPrompt, 0);
+        if (requestCode == ADD_TRANSACTION_REQUEST && resultCode == RESULT_OK) {
+            
+            // Show Interstitial Ad if user is not premium
+            UserPreferences prefs = db.getUserPreferences();
+            if (!prefs.isPremium()) {
+                InterstitialAdHelper.showAd(this);
+            }
+            
+            if (data != null) {
+                String categoryToPrompt = data.getStringExtra("PROMPT_BUDGET_FOR_CATEGORY");
+                if (categoryToPrompt != null) {
+                    // Since this is the first time, budget limit is 0
+                    showBudgetSettingDialog(categoryToPrompt, 0);
+                }
             }
         } else if (requestCode == MANAGE_CATEGORIES_REQUEST && resultCode == RESULT_OK && data != null) {
             String newCategoryName = data.getStringExtra("NEW_CATEGORY_NAME");
             if (newCategoryName != null) {
-                // Prompt to set budget for the new category
-                showBudgetSettingDialog(newCategoryName, 0);
+                // Prompt to set budget for the new category - REMOVED per user request
+                // showBudgetSettingDialog(newCategoryName, 0);
+                Toast.makeText(this, "Category " + newCategoryName + " created", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -330,5 +350,117 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
                 limit
         );
         dialog.show(getSupportFragmentManager(), "BudgetSettingDialog");
+    }
+
+
+    //Code for data restoring for premium vesion
+    private void checkAndTriggerRestore() {
+        UserPreferences prefs = db.getUserPreferences();
+        if (prefs.isPremium()) {
+            DatabaseBackupManager backupManager = new DatabaseBackupManager(this);
+
+            // Use the asynchronous method with a callback
+            backupManager.hasUserData(hasData -> {
+                if (!hasData) {
+                    // If the user has no data, show the restore dialog on the main thread
+                    runOnUiThread(() -> showEmailRestoreDialog(MainActivity.this));
+                }
+            });
+        }
+    }
+
+    private boolean isValidEmail(String email) {
+        return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    public void showEmailRestoreDialog(Context context) {
+        // Create AlertDialog Builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        // Inflate custom layout
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.dialog_email_backup, null);
+
+        // Get references to views
+        TextView titleText = dialogView.findViewById(R.id.tv_dialog_title);
+        TextView messageText = dialogView.findViewById(R.id.tv_dialog_message);
+        EditText emailInput = dialogView.findViewById(R.id.et_email_input);
+        Button submitButton = dialogView.findViewById(R.id.btn_submit);
+        Button skipButton = dialogView.findViewById(R.id.btn_skip);
+
+        // Set dialog content
+        titleText.setText("Backup/Restore Your Data");
+        messageText.setText("Enter your email address to backup/restore your data. if you have notes saved on the free version then please enter the same email");
+
+        // Set the custom view to dialog
+        builder.setView(dialogView);
+        builder.setCancelable(false); // Prevent dismissal by touching outside
+
+        // Create and show dialog
+        AlertDialog dialog = builder.create();
+
+        // Submit button click listener
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String email = emailInput.getText().toString().trim();
+
+                if (TextUtils.isEmpty(email)) {
+                    emailInput.setError("Please enter your email address");
+                    emailInput.requestFocus();
+
+                    return;
+                }
+
+                if (!isValidEmail(email)) {
+                    emailInput.setError("Please enter a valid email address");
+                    emailInput.requestFocus();
+                    return;
+                }
+
+                // Process the email for backup
+                //  saveEmailToPreferences(email,context);
+                try {
+                    processDataRestore(email, context);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                dialog.dismiss();
+
+            }
+        });
+
+        // Skip button click listener
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+
+            }
+        });
+
+        dialog.show();
+    }
+    private void processDataRestore(String email, Context context) throws IOException {
+        // Show loading or progress indicator here if needed
+        DatabaseBackupManager.userEmail = email;
+        DatabaseBackupManager backupManager = new DatabaseBackupManager(this);
+
+        backupManager.restoreDatabase(new DatabaseBackupManager.OnRestoreListener() {
+            @Override
+            public void onRestoreSuccess() {
+                // Handle success - e.g., show a toast and maybe restart the app or refresh data
+                Toast.makeText(MainActivity.this, "Restore successful! Please re-open the app", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onRestoreFailure(Exception e) {
+                // Handle failure
+                Log.e("Restore", "Restore failed", e);
+            }
+        });
+
     }
 }
