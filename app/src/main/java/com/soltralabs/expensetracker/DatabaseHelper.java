@@ -350,7 +350,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void saveUserPreferences(UserPreferences prefs) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(KEY_IS_PREMIUM, prefs.isPremium() ? 1 : 0);
+        values.put(KEY_IS_PREMIUM, CheckPremiumStatus.isPremium ? 1 : 0);
         values.put(KEY_MONTHLY_INCOME, prefs.getMonthlyIncome());
         values.put(KEY_TRANSACTION_COUNT, prefs.getTransactionCount());
 

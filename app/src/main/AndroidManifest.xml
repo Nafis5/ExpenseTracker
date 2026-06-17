@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.samsung.android.iap.permission.BILLING" />
 
     <application
         android:name=".MainApplication"
@@ -14,26 +15,34 @@
         android:roundIcon="@drawable/icon2"
         android:supportsRtl="true"
         android:theme="@style/Theme.ExpenseTracker"
+        android:resizeableActivity="false"
         tools:targetApi="33">
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="true" >
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
 
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+        <activity
+            android:name=".SubscriptionActivity2"
+            android:exported="false"
+            android:label="Subscription" />
         <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3103198316569371~9315509353"/>
+            android:value="ca-app-pub-3103198316569371~9315509353" />
 
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:exported="true"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
         <activity android:name=".AddTransactionActivity" />
         <activity android:name=".TransactionListActivity" />
         <activity android:name=".ManageCategoriesActivity" />
-        <activity android:name=".SubscriptionActivity" />
+
     </application>
 
 </manifest>

@@ -8,11 +8,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.soltralabs.expensetracker.pro"
+        applicationId = "com.soltralabs.expensetracker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "2.4"
+        versionCode = 16
+        versionName = "2.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +36,9 @@ android {
 }
 
 dependencies {
+    // Samsung In-App Purchase SDK v6.5.0 (aar in app/libs)
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar"))))
+
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -50,6 +53,7 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation("com.google.firebase:firebase-storage:20.3.0")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation(libs.activity)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     private static final int MANAGE_CATEGORIES_REQUEST = 2;
 
     private DatabaseHelper db;
-    private PremiumManager premiumManager;
+
     private String currentMonthYear;
 
     private TextView totalIncomeTextView, totalExpenseTextView, totalRemainingTextView, monthDisplayTextView;
@@ -73,8 +73,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
         setSupportActionBar(toolbar);
 
         db = new DatabaseHelper(this);
-        premiumManager = PremiumManager.getInstance(this);
-        premiumManager.setIsPremium(true, this);
+
         // Set current month
         Calendar cal = Calendar.getInstance();
         currentMonthYear = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
@@ -82,12 +81,12 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
         initViews();
         setupListeners();
         loadDashboardData();
-        if (premiumManager.shouldShowAds()) {
+        if (!CheckPremiumStatus.isPremium) {
             AdManager.loadBannerAd(this, findViewById(R.id.ad_container));
         }
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         
-        checkAndTriggerRestore();
+        //checkAndTriggerRestore();
     }
 
     @Override
@@ -100,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_add_transaction) {
             UserPreferences prefs = db.getUserPreferences();
-            if(!premiumManager.canAddTransaction(prefs.getTransactionCount())){
+            if(prefs.getTransactionCount()>50 & !CheckPremiumStatus.isPremium){
                 showUpgradeDialog(getString(R.string.upgrade_prompt_message_limit));
                 return true;
             }
@@ -160,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
 
     private void setupMonthNavigation() {
         previousMonthButton.setOnClickListener(v -> {
-            if (premiumManager.canViewHistoricalData()) {
+            if (CheckPremiumStatus.isPremium) {
                 changeMonth(-1);
             } else {
                 showMonthChangeUpgradeDialog();
@@ -168,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
         });
 
         nextMonthButton.setOnClickListener(v -> {
-            if (premiumManager.canViewHistoricalData()) {
+            if (CheckPremiumStatus.isPremium) {
                 changeMonth(1);
             } else {
                 showMonthChangeUpgradeDialog();
@@ -293,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
                 .setTitle(R.string.upgrade_prompt_title)
                 .setMessage(message)
                 .setPositiveButton("Upgrade", (dialog, which) -> {
-                    startActivity(new Intent(this, SubscriptionActivity.class));
+                    startActivity(new Intent(this, SubscriptionActivity2.class));
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -319,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
             
             // Show Interstitial Ad if user is not premium
             UserPreferences prefs = db.getUserPreferences();
-            if (!prefs.isPremium()) {
+            if (!CheckPremiumStatus.isPremium) {
                 InterstitialAdHelper.showAd(this);
             }
             
@@ -356,7 +355,7 @@ public class MainActivity extends AppCompatActivity implements CategoryAdapter.O
     //Code for data restoring for premium vesion
     private void checkAndTriggerRestore() {
         UserPreferences prefs = db.getUserPreferences();
-        if (prefs.isPremium()) {
+        if (CheckPremiumStatus.isPremium) {
             DatabaseBackupManager backupManager = new DatabaseBackupManager(this);
 
             // Use the asynchronous method with a callback

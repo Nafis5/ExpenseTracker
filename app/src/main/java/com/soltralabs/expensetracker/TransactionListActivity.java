@@ -30,7 +30,7 @@ public class TransactionListActivity extends AppCompatActivity {
     private TransactionAdapter transactionAdapter;
     private List<Transaction> transactionList;
     private DatabaseHelper db;
-    private PremiumManager premiumManager;
+
     private Spinner monthSpinner;
     private ImageView calendarIcon;
     private TextView filterInfoTextView;
@@ -51,7 +51,7 @@ public class TransactionListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_transaction_list);
 
         db = new DatabaseHelper(this);
-        premiumManager = PremiumManager.getInstance(this);
+
 
         initViews();
         setupMonthSpinner();
@@ -97,7 +97,7 @@ public class TransactionListActivity extends AppCompatActivity {
             Calendar selectedCal = Calendar.getInstance();
             selectedCal.set(year1, monthOfYear, dayOfMonth);
             
-            if (!premiumManager.canViewHistoricalData() && !isDateInCurrentMonth(selectedCal)) {
+            if (!CheckPremiumStatus.isPremium && !isDateInCurrentMonth(selectedCal)) {
                 showUpgradeDialog();
                 return;
             }
@@ -125,7 +125,7 @@ public class TransactionListActivity extends AppCompatActivity {
         currentMonthYear = sdf.format(cal.getTime());
         months.add(currentMonthYear);
 
-        if (premiumManager.canViewHistoricalData()) {
+        if (CheckPremiumStatus.isPremium) {
             for (int i = 0; i < 11; i++) {
                 cal.add(Calendar.MONTH, -1);
                 months.add(sdf.format(cal.getTime()));
@@ -141,7 +141,7 @@ public class TransactionListActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedMonth = (String) parent.getItemAtPosition(position);
                 // The first item is always the current month and allowed.
-                if (position > 0 && !premiumManager.canViewHistoricalData()) {
+                if (position > 0 && !CheckPremiumStatus.isPremium) {
                     showUpgradeDialog();
                     monthSpinner.setSelection(0);
                 } else {

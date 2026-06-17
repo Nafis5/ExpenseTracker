@@ -9,6 +9,6 @@ public class MainApplication extends Application {
         // Initialize AdMob
         AdManager.initialize(this);
         // Initialize PremiumManager
-        PremiumManager.getInstance(this);
+
     }
 } 

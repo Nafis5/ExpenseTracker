@@ -62,7 +62,7 @@ public class ManageCategoriesActivity extends AppCompatActivity {
     private void addCategory() {
         // Check if user is premium
         UserPreferences prefs = db.getUserPreferences();
-        if (!prefs.isPremium()) {
+        if (!CheckPremiumStatus.isPremium) {
             showUpgradeDialog();
             return;
         }
@@ -86,7 +86,7 @@ public class ManageCategoriesActivity extends AppCompatActivity {
                 .setTitle("Premium Feature")
                 .setMessage("Creating custom categories is available for premium users only.")
                 .setPositiveButton("Upgrade", (dialog, which) -> {
-                    startActivity(new Intent(this, SubscriptionActivity.class));
+                    startActivity(new Intent(this, SubscriptionActivity2.class));
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

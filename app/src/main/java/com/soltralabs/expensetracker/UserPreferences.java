@@ -2,7 +2,7 @@ package com.soltralabs.expensetracker;
 
 public class UserPreferences {
     private int id;
-    private boolean isPremium;
+
     private double monthlyIncome;
     private int transactionCount;
 
@@ -11,13 +11,13 @@ public class UserPreferences {
 
     public UserPreferences(int id, boolean isPremium, double monthlyIncome, int transactionCount) {
         this.id = id;
-        this.isPremium = isPremium;
+       // this.isPremium = isPremium;
         this.monthlyIncome = monthlyIncome;
         this.transactionCount = transactionCount;
     }
     
     public UserPreferences(boolean isPremium, double monthlyIncome, int transactionCount) {
-        this.isPremium = isPremium;
+       // this.isPremium = isPremium;
         this.monthlyIncome = monthlyIncome;
         this.transactionCount = transactionCount;
     }
@@ -30,13 +30,9 @@ public class UserPreferences {
         this.id = id;
     }
 
-    public boolean isPremium() {
-        return true;
-    }
 
-    public void setPremium(boolean premium) {
-        isPremium = true;
-    }
+
+
 
     public double getMonthlyIncome() {
         return monthlyIncome;

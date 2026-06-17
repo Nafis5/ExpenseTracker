@@ -66,7 +66,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         
         // Preload Interstitial Ad if user is not premium
         UserPreferences prefs = db.getUserPreferences();
-        if (!prefs.isPremium()) {
+        if (!CheckPremiumStatus.isPremium) {
             InterstitialAdHelper.loadAd(this);
         }
     }

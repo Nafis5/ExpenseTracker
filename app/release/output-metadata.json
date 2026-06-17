@@ -4,15 +4,15 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.soltralabs.expensetracker.pro",
+  "applicationId": "com.soltralabs.expensetracker",
   "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 12,
-      "versionName": "2.4",
+      "versionCode": 16,
+      "versionName": "2.8",
       "outputFile": "app-release.apk"
     }
   ],
